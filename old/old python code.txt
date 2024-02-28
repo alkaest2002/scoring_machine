@@ -1,0 +1,140 @@
+def convert_to_matrices(test_specs):
+    # get test length
+    test_length = test_specs["length"]
+    # init matrices to be returned
+    df_straight = pd.DataFrame()
+    df_reversed = pd.DataFrame()
+    # iterate over scales
+    for scale in test_specs["scales"]:
+        # get current scale label, straight and reversed items
+        scale_label, straight_items_indices, reversed_items_indices = scale
+        # iterate over type of items (either straight or reversed)
+        for df, items_indices in [(df_straight, straight_items_indices), (df_reversed, reversed_items_indices)]:
+            # init items series with zeroes 
+            items = pd.Series(np.zeros(test_length))
+            # correct item indices, since items are 1-based while matrices are 0-based
+            matrix_indices = pd.Series(items_indices).sub(1)
+            # "switch to 1" items belonging to current scale
+            items[matrix_indices] = 1
+            # add current scale items matrix to df
+            df[scale_label] = items
+    # return stright/reversed items matrices
+    return df_straight, df_reversed
+
+def compute_raw_scores(data, test_specs, score_strategy = "sum", split_results = False):
+    # init results df
+    results = pd.DataFrame()
+    # clone data
+    answers = data.copy()
+    # get scales items matrices (two separate matrices for straight and reversed items)
+    df_straight, df_reversed = convert_to_matrices(test_specs)
+    
+    ############################################################
+    # straight items
+    ############################################################
+    
+    # compute sum of straight items
+    score_straight_sum = np.dot(answers.fillna(0), df_straight)
+    # compute mean of straight items
+    with np.errstate(divide='ignore', invalid='ignore'):
+        score_straight_mean = np.true_divide(score_straight_sum, df_straight.sum(axis=0).to_numpy())
+        score_straight_mean[score_straight_mean == np.inf] = 0
+        score_straight_mean = np.nan_to_num(score_straight_mean)
+
+    ############################################################
+    # reversed items
+    ############################################################
+    
+    # compute amount to use for reversed items
+    rev = test_specs["likert"]["min"] + test_specs["likert"]["max"]
+    # compute sum of reversed items
+    score_reversed_sum = np.dot(rev - answers.fillna(rev), df_reversed)
+    # compute mean of reversed items
+    with np.errstate(divide='ignore', invalid='ignore'):
+        score_reversed_mean = np.true_divide(score_reversed_sum, df_reversed.sum(axis=0).to_numpy())
+        score_reversed_mean[score_reversed_mean == np.inf] = 0
+        score_reversed_mean = np.nan_to_num(score_reversed_mean)
+
+    #############################################################
+    # final results
+    ############################################################
+
+    # if results should be splitted by straight/reversed
+    if split_results:
+        # return separate scores (one for straight items, one for reversed items)
+        return score_straight_sum, score_reversed_sum
+    # otherwise return combined result
+    else:
+        # compute final combined results
+        results.loc[:, df_straight.columns] = score_straight_sum + score_reversed_sum
+        # if mean scores are requested
+        if score_strategy == "mean":
+            # add mean scores to results df
+            results.loc[:, df_straight.columns] = score_straight_mean + score_reversed_mean
+        # return results df
+        return results.astype(int)
+
+def count_items_per_scale(data, test_specs, split_results = False):
+    # init results
+    results = pd.DataFrame()
+    # clone data
+    answers = data.copy()
+    # get scales items matrices (two separate matrices for straight and reversed items)
+    df_straight, df_reversed = convert_to_matrices(test_specs)
+    # merge straight and reversed items matrices
+    df_tot = df_straight + df_reversed
+    # if we want results splitted by straight/reversed items
+    if split_results:
+        return df_straight.sum(), df_reversed.sum()
+    # otherwise return combined results
+    return df_tot.sum()
+
+def count_missing_items_per_scale(data, test_specs, split_results = False):
+    # init results df
+    results = pd.DataFrame()
+    # clone data
+    answers = data.copy()
+    # get scales items matrices (two separate matrices for straight and reversed items)
+    df_straight, df_reversed = convert_to_matrices(test_specs)
+    # merge straight and reversed items matrices
+    df_tot = df_straight + df_reversed
+    # if we want results splitted by straight/reversed items
+    if split_results:
+        return (
+            df_straight.apply(lambda x: answers.T.loc[x.astype(bool).values].isna().sum()),
+            df_reversed.apply(lambda x: answers.T.loc[x.astype(bool).values].isna().sum())
+        )
+    # otherwise return combined results
+    return df_tot.apply(lambda x: answers.T.loc[x.astype(bool).values].isna().sum())
+
+def compute_raw_scores_compensate_for_missing_items(data, test_specs):
+    # get splitted data that is needed for computing raw scores while compensating for missing items
+    score_straight, score_reversed = compute_raw_scores(data, test_specs, score_strategy = "sum", split_results = True)
+    missing_straight, missing_reversed = count_missing_items_per_scale(data, test_specs, split_results = True)
+    items_straight, items_reversed = count_items_per_scale(data, test_specs, split_results = True)
+    # init list
+    components = []
+    # compute corrected raw scores 
+    for raw_scores, missing_items_by_scale, items_by_scale in [
+        (score_straight, missing_straight, items_straight),
+        (score_reversed, missing_reversed, items_reversed)
+    ]: 
+        # compute how many items where effectively responded (by scale)
+        items_with_answers_by_scale = items_by_scale - missing_items_by_scale
+        with np.errstate(divide='ignore', invalid='ignore'):
+            # compute mean responses (by scale)
+            mean_results= np.true_divide(raw_scores, items_with_answers_by_scale.astype(int))
+            mean_results[mean_results == np.inf] = 0
+            mean_results = np.nan_to_num(mean_results)
+            # compute corrected results (by scale)
+            corrected_results = mean_results * items_by_scale.to_numpy().T
+            # append corrected results to list
+            components.append(corrected_results)
+    # return results as a pandas DataFrame
+    return pd.DataFrame(components[0] + components[1], index=data.index, columns=items_straight.index).astype(int)
+    
+def compute_standard_score(s, **kwargs):
+    # get kwargs
+    norms, type = kwargs["norms"],  kwargs["type"]
+    # return standard scores
+    return norms[norms["scale"].eq(s.name)].take(s)[type].values

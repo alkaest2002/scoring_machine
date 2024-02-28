@@ -1,0 +1,411 @@
+norms_id,scale,raw,tscore,interpretation
+1,ten,0,34,Basso
+1,ten,1,36,Basso
+1,ten,2,38,Basso
+1,ten,3,39,Basso
+1,ten,4,41,Nella media
+1,ten,5,43,Nella media
+1,ten,6,44,Nella media
+1,ten,7,46,Nella media
+1,ten,8,47,Nella media
+1,ten,9,49,Nella media
+1,ten,10,51,Nella media
+1,ten,11,52,Nella media
+1,ten,12,54,Nella media
+1,ten,13,56,Nella media
+1,ten,14,58,Nella media
+1,ten,15,59,Nella media
+1,ten,16,61,Alto
+1,ten,17,62,Alto
+1,ten,18,64,Alto
+1,ten,19,66,Alto
+1,ten,20,67,Alto
+1,ten,21,69,Alto
+1,ten,22,71,Alto
+1,ten,23,72,Alto
+1,ten,24,74,Alto
+1,ten,25,76,Alto
+1,ten,26,77,Alto
+1,ten,27,79,Alto
+1,ten,28,80,Alto
+1,ten,29,82,Molto Alto
+1,ten,30,84,Molto Alto
+1,ten,31,85,Molto Alto
+1,dep,0,41,Nella media
+1,dep,1,42,Nella media
+1,dep,2,43,Nella media
+1,dep,3,44,Nella media
+1,dep,4,45,Nella media
+1,dep,5,46,Nella media
+1,dep,6,47,Nella media
+1,dep,7,49,Nella media
+1,dep,8,50,Nella media
+1,dep,9,51,Nella media
+1,dep,10,52,Nella media
+1,dep,11,53,Nella media
+1,dep,12,54,Nella media
+1,dep,13,55,Nella media
+1,dep,14,56,Nella media
+1,dep,15,58,Nella media
+1,dep,16,59,Nella media
+1,dep,17,60,Nella media
+1,dep,18,61,Alto
+1,dep,19,62,Alto
+1,dep,20,63,Alto
+1,dep,21,64,Alto
+1,dep,22,65,Alto
+1,dep,23,67,Alto
+1,dep,24,68,Alto
+1,dep,25,69,Alto
+1,dep,26,70,Alto
+1,dep,27,71,Alto
+1,dep,28,72,Alto
+1,dep,29,73,Alto
+1,dep,30,74,Alto
+1,dep,31,76,Alto
+1,dep,32,76,Alto
+1,dep,33,78,Alto
+1,dep,34,79,Alto
+1,dep,35,80,Alto
+1,dep,36,81,Molto Alto
+1,dep,37,82,Molto Alto
+1,dep,38,83,Molto Alto
+1,dep,39,85,Molto Alto
+1,dep,40,86,Molto Alto
+1,dep,41,87,Molto Alto
+1,dep,42,88,Molto Alto
+1,dep,43,89,Molto Alto
+1,dep,44,90,Molto Alto
+1,dep,45,91,Molto Alto
+1,ang,0,40,Nella media
+1,ang,1,41,Nella media
+1,ang,2,43,Nella media
+1,ang,3,44,Nella media
+1,ang,4,45,Nella media
+1,ang,5,47,Nella media
+1,ang,6,48,Nella media
+1,ang,7,49,Nella media
+1,ang,8,51,Nella media
+1,ang,9,52,Nella media
+1,ang,10,53,Nella media
+1,ang,11,55,Nella media
+1,ang,12,56,Nella media
+1,ang,13,58,Nella media
+1,ang,14,59,Nella media
+1,ang,15,60,Nella media
+1,ang,16,62,Alto
+1,ang,17,63,Alto
+1,ang,18,64,Alto
+1,ang,19,66,Alto
+1,ang,20,67,Alto
+1,ang,21,68,Alto
+1,ang,22,70,Alto
+1,ang,23,71,Alto
+1,ang,24,72,Alto
+1,ang,25,74,Alto
+1,ang,26,75,Alto
+1,ang,27,76,Alto
+1,ang,28,78,Alto
+1,ang,29,79,Alto
+1,ang,30,81,Molto Alto
+1,ang,31,82,Molto Alto
+1,ang,32,83,Molto Alto
+1,ang,33,85,Molto Alto
+1,ang,34,86,Molto Alto
+1,ang,35,87,Molto Alto
+1,ang,36,89,Molto Alto
+1,ang,37,90,Molto Alto
+1,ang,38,91,Molto Alto
+1,ang,39,93,Molto Alto
+1,ang,40,94,Molto Alto
+1,ang,41,95,Molto Alto
+1,ang,42,97,Molto Alto
+1,ang,43,98,Molto Alto
+1,ang,44,99,Molto Alto
+1,vig,0,24,Basso
+1,vig,1,26,Basso
+1,vig,2,28,Basso
+1,vig,3,29,Basso
+1,vig,4,31,Basso
+1,vig,5,33,Basso
+1,vig,6,34,Basso
+1,vig,7,36,Basso
+1,vig,8,38,Basso
+1,vig,9,39,Basso
+1,vig,10,41,Nella media
+1,vig,11,43,Nella media
+1,vig,12,44,Nella media
+1,vig,13,46,Nella media
+1,vig,14,48,Nella media
+1,vig,15,49,Nella media
+1,vig,16,51,Nella media
+1,vig,17,53,Nella media
+1,vig,18,54,Nella media
+1,vig,19,56,Nella media
+1,vig,20,58,Nella media
+1,vig,21,59,Nella media
+1,vig,22,61,Alto
+1,vig,23,63,Alto
+1,vig,24,64,Alto
+1,vig,25,66,Alto
+1,vig,26,68,Alto
+1,vig,27,69,Alto
+1,vig,28,71,Alto
+1,vig,29,72,Alto
+1,fat,0,37,Basso
+1,fat,1,39,Basso
+1,fat,2,41,Nella media
+1,fat,3,43,Nella media
+1,fat,4,46,Nella media
+1,fat,5,48,Nella media
+1,fat,6,50,Nella media
+1,fat,7,52,Nella media
+1,fat,8,54,Nella media
+1,fat,9,57,Nella media
+1,fat,10,59,Nella media
+1,fat,11,61,Alto
+1,fat,12,63,Alto
+1,fat,13,66,Alto
+1,fat,14,68,Alto
+1,fat,15,70,Alto
+1,fat,16,72,Alto
+1,fat,17,74,Alto
+1,fat,18,77,Alto
+1,fat,19,79,Alto
+1,fat,20,81,Molto Alto
+1,fat,21,83,Molto Alto
+1,fat,22,86,Molto Alto
+1,fat,23,88,Molto Alto
+1,con,0,32,Basso
+1,con,1,34,Basso
+1,con,2,37,Basso
+1,con,3,39,Basso
+1,con,4,41,Nella media
+1,con,5,43,Nella media
+1,con,6,45,Nella media
+1,con,7,48,Nella media
+1,con,8,50,Nella media
+1,con,9,52,Nella media
+1,con,10,54,Nella media
+1,con,11,56,Nella media
+1,con,12,59,Nella media
+1,con,13,61,Alto
+1,con,14,63,Alto
+1,con,15,65,Alto
+1,con,16,67,Alto
+1,con,17,70,Alto
+1,con,18,72,Alto
+1,con,19,74,Alto
+1,con,20,76,Alto
+1,con,21,78,Alto
+1,con,22,81,Molto Alto
+1,con,23,83,Molto Alto
+1,con,24,85,Molto Alto
+1,con,25,87,Molto Alto
+1,con,26,89,Molto Alto
+1,con,27,92,Molto Alto
+2,ten,0,34,Basso
+2,ten,1,36,Basso
+2,ten,2,38,Basso
+2,ten,3,39,Basso
+2,ten,4,41,Nella media
+2,ten,5,43,Nella media
+2,ten,6,44,Nella media
+2,ten,7,46,Nella media
+2,ten,8,47,Nella media
+2,ten,9,49,Nella media
+2,ten,10,51,Nella media
+2,ten,11,52,Nella media
+2,ten,12,54,Nella media
+2,ten,13,56,Nella media
+2,ten,14,58,Nella media
+2,ten,15,59,Nella media
+2,ten,16,61,Alto
+2,ten,17,62,Alto
+2,ten,18,64,Alto
+2,ten,19,66,Alto
+2,ten,20,67,Alto
+2,ten,21,69,Alto
+2,ten,22,71,Alto
+2,ten,23,72,Alto
+2,ten,24,74,Alto
+2,ten,25,76,Alto
+2,ten,26,77,Alto
+2,ten,27,79,Alto
+2,ten,28,80,Alto
+2,ten,29,82,Molto Alto
+2,ten,30,84,Molto Alto
+2,ten,31,85,Molto Alto
+2,dep,0,41,Nella media
+2,dep,1,42,Nella media
+2,dep,2,43,Nella media
+2,dep,3,44,Nella media
+2,dep,4,45,Nella media
+2,dep,5,46,Nella media
+2,dep,6,47,Nella media
+2,dep,7,49,Nella media
+2,dep,8,50,Nella media
+2,dep,9,51,Nella media
+2,dep,10,52,Nella media
+2,dep,11,53,Nella media
+2,dep,12,54,Nella media
+2,dep,13,55,Nella media
+2,dep,14,56,Nella media
+2,dep,15,58,Nella media
+2,dep,16,59,Nella media
+2,dep,17,60,Nella media
+2,dep,18,61,Alto
+2,dep,19,62,Alto
+2,dep,20,63,Alto
+2,dep,21,64,Alto
+2,dep,22,65,Alto
+2,dep,23,67,Alto
+2,dep,24,68,Alto
+2,dep,25,69,Alto
+2,dep,26,70,Alto
+2,dep,27,71,Alto
+2,dep,28,72,Alto
+2,dep,29,73,Alto
+2,dep,30,74,Alto
+2,dep,31,76,Alto
+2,dep,32,76,Alto
+2,dep,33,78,Alto
+2,dep,34,79,Alto
+2,dep,35,80,Alto
+2,dep,36,81,Molto Alto
+2,dep,37,82,Molto Alto
+2,dep,38,83,Molto Alto
+2,dep,39,85,Molto Alto
+2,dep,40,86,Molto Alto
+2,dep,41,87,Molto Alto
+2,dep,42,88,Molto Alto
+2,dep,43,89,Molto Alto
+2,dep,44,90,Molto Alto
+2,dep,45,91,Molto Alto
+2,ang,0,40,Nella media
+2,ang,1,41,Nella media
+2,ang,2,43,Nella media
+2,ang,3,44,Nella media
+2,ang,4,45,Nella media
+2,ang,5,47,Nella media
+2,ang,6,48,Nella media
+2,ang,7,49,Nella media
+2,ang,8,51,Nella media
+2,ang,9,52,Nella media
+2,ang,10,53,Nella media
+2,ang,11,55,Nella media
+2,ang,12,56,Nella media
+2,ang,13,58,Nella media
+2,ang,14,59,Nella media
+2,ang,15,60,Nella media
+2,ang,16,62,Alto
+2,ang,17,63,Alto
+2,ang,18,64,Alto
+2,ang,19,66,Alto
+2,ang,20,67,Alto
+2,ang,21,68,Alto
+2,ang,22,70,Alto
+2,ang,23,71,Alto
+2,ang,24,72,Alto
+2,ang,25,74,Alto
+2,ang,26,75,Alto
+2,ang,27,76,Alto
+2,ang,28,78,Alto
+2,ang,29,79,Alto
+2,ang,30,81,Molto Alto
+2,ang,31,82,Molto Alto
+2,ang,32,83,Molto Alto
+2,ang,33,85,Molto Alto
+2,ang,34,86,Molto Alto
+2,ang,35,87,Molto Alto
+2,ang,36,89,Molto Alto
+2,ang,37,90,Molto Alto
+2,ang,38,91,Molto Alto
+2,ang,39,93,Molto Alto
+2,ang,40,94,Molto Alto
+2,ang,41,95,Molto Alto
+2,ang,42,97,Molto Alto
+2,ang,43,98,Molto Alto
+2,ang,44,99,Molto Alto
+2,vig,0,26,Basso
+2,vig,1,27,Basso
+2,vig,2,29,Basso
+2,vig,3,31,Basso
+2,vig,4,33,Basso
+2,vig,5,34,Basso
+2,vig,6,36,Basso
+2,vig,7,38,Basso
+2,vig,8,39,Basso
+2,vig,9,41,Nella media
+2,vig,10,43,Nella media
+2,vig,11,44,Nella media
+2,vig,12,46,Nella media
+2,vig,13,48,Nella media
+2,vig,14,49,Nella media
+2,vig,15,51,Nella media
+2,vig,16,53,Nella media
+2,vig,17,55,Nella media
+2,vig,18,56,Nella media
+2,vig,19,58,Nella media
+2,vig,20,60,Nella media
+2,vig,21,61,Alto
+2,vig,22,63,Alto
+2,vig,23,65,Alto
+2,vig,24,66,Alto
+2,vig,25,68,Alto
+2,vig,26,70,Alto
+2,vig,27,71,Alto
+2,vig,28,73,Alto
+2,vig,29,75,Alto
+2,fat,0,37,Basso
+2,fat,1,39,Basso
+2,fat,2,41,Nella media
+2,fat,3,43,Nella media
+2,fat,4,46,Nella media
+2,fat,5,48,Nella media
+2,fat,6,50,Nella media
+2,fat,7,52,Nella media
+2,fat,8,54,Nella media
+2,fat,9,57,Nella media
+2,fat,10,59,Nella media
+2,fat,11,61,Alto
+2,fat,12,63,Alto
+2,fat,13,66,Alto
+2,fat,14,68,Alto
+2,fat,15,70,Alto
+2,fat,16,72,Alto
+2,fat,17,74,Alto
+2,fat,18,77,Alto
+2,fat,19,79,Alto
+2,fat,20,81,Molto Alto
+2,fat,21,83,Molto Alto
+2,fat,22,86,Molto Alto
+2,fat,23,88,Molto Alto
+2,con,0,32,Basso
+2,con,1,34,Basso
+2,con,2,37,Basso
+2,con,3,39,Basso
+2,con,4,41,Nella media
+2,con,5,43,Nella media
+2,con,6,45,Nella media
+2,con,7,48,Nella media
+2,con,8,50,Nella media
+2,con,9,52,Nella media
+2,con,10,54,Nella media
+2,con,11,56,Nella media
+2,con,12,59,Nella media
+2,con,13,61,Alto
+2,con,14,63,Alto
+2,con,15,65,Alto
+2,con,16,67,Alto
+2,con,17,70,Alto
+2,con,18,72,Alto
+2,con,19,74,Alto
+2,con,20,76,Alto
+2,con,21,78,Alto
+2,con,22,81,Molto Alto
+2,con,23,83,Molto Alto
+2,con,24,85,Molto Alto
+2,con,25,87,Molto Alto
+2,con,26,89,Molto Alto
+2,con,27,92,Molto Alto
