@@ -155,4 +155,6 @@ cython_debug/
 **/.env
 data
 xerox
-lib/tests
+old
+lib/tests/poms
+lib/tests/spectra
