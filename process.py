@@ -43,8 +43,22 @@ try:
         test_results = pd.concat([ test_results, scorer.score() ])
     # determine path of results data file
     test_results_filepath= filer.get_base_folderpath("xerox") / f"{Path(test_data_filename).stem}_scored.csv" # type: ignore
+    # filter dict-like columns
+    dict_like_columns = test_results.filter(regex="_std")
+    # filter all columns expcet standard scores
+    test_results_except_std_dictlike_scores = (
+        test_results.loc[:, ~(test_results.columns.isin(dict_like_columns.columns))]
+    )
+    # init final dataset
+    final_df = test_results_except_std_dictlike_scores
+    # expand dict-like columns (coming from norms)
+    for col_dict_name, col_dict in dict_like_columns.items():
+        final = pd.concat([
+            final_df,
+            pd.json_normalize(col_dict).add_prefix(f"{col_dict_name}_") # type: ignore
+        ], axis=1)
     # persist results
-    test_results.to_csv(test_results_filepath, index=False)
+    final_df.to_csv(test_results_filepath, index=False)
 # on error
 except Exception as e:
     # notify error message
