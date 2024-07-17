@@ -47,7 +47,7 @@ class Scorer():
         return items_by_scale, reversed_items_by_scale
 
     def compute_raw_score(self, items_by_scale: pd.DataFrame, fillna_value: int) -> tuple[pd.DataFrame, pd.DataFrame]:
-        # clone data
+        # clone item answers
         item_answers = self.item_answers.copy()
         # compute raw scores
         raw_scores = np.dot(item_answers.fillna(fillna_value).sub(fillna_value).abs(), items_by_scale)
@@ -55,10 +55,8 @@ class Scorer():
         with np.errstate(divide='ignore', invalid='ignore'):
             # compute mean raw scores
             mean_scores = np.true_divide(raw_scores, items_by_scale.sum(axis=0).to_numpy())
-            # replace inf with 0
-            mean_scores[mean_scores == np.inf] = 0
-            # replace NaNs wito 0
-            mean_scores = np.nan_to_num(mean_scores)
+            # replace NaNs, Infs with 0
+            mean_scores = np.nan_to_num(mean_scores, nan=0.0, posinf=0.0, neginf=0.0)
         # return matrices as pandas dataframes
         return (
             pd.DataFrame(raw_scores, index=self.item_answers.index, columns=self.scale_names), # type: ignore
@@ -108,12 +106,10 @@ class Scorer():
             with np.errstate(divide='ignore', invalid='ignore'):
                 # compute mean responses
                 mean_results = np.true_divide(sum_scores, items_with_answers_by_scale)
-                # replace inf with 0
-                mean_results[mean_results == np.inf] = 0
-                # replace NaNs with 0
-                mean_results = np.nan_to_num(mean_results)
+                # replace NaNs, Infs with 0
+                mean_results = np.nan_to_num(mean_results, nan=0.0, posinf=0.0, neginf=0.0)
             # compute corrected results
-            corrected_results = mean_results * items_by_scale.to_numpy().T
+            corrected_results = mean_results * items_by_scale.T.to_numpy()
             # append corrected results to list
             components.append(corrected_results)
         # return results
@@ -129,9 +125,9 @@ class Scorer():
             # get kwargs
             norms, norms_col = kwargs["norms"], kwargs["norms_col"]
             # determine wich norms to use for current scale
-            norms_to_use = norms[norms["scale"].eq(series.name)][norms_col]
-            # take standard scores
-            return np.take(norms_to_use.to_numpy(), series.to_numpy(), mode="clip", axis=0).tolist()
+            norms_to_use = norms[norms["scale"].eq(series.name)]
+            # take form fourth column onwards
+            return norms_to_use.take(series.values, axis=0).iloc[:, 3:].to_dict(orient="records")
         # return standard scores
         return raw_scores.apply(get_standard_scores, norms=norms, norms_col=norms_col)
 
