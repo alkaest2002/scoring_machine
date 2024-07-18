@@ -7,7 +7,7 @@ from lib.Loader import Loader
 from lib.Sanitizer import Sanitizer, UNAVAILABLE_NORMS
 from lib.Scorer import Scorer
 from lib.Errors import TracebackNotifier
-
+from lib.Utils import expand_dict_like_columns
 # available tests list
 available_tests = [ f.name for f in TESTS_PATH.glob("[!.]*") if f.is_dir ]
 
@@ -41,23 +41,11 @@ try:
         scorer = Scorer(test_specs, test_norms, group_test_data) # type: ignore
         # add score
         test_results = pd.concat([ test_results, scorer.score() ])
+    # expand dict-like columns
+    final_df = expand_dict_like_columns(test_results, "_std")
     # determine path of results data file
     test_results_filepath= filer.get_base_folderpath("xerox") / f"{Path(test_data_filename).stem}_scored.csv" # type: ignore
-    # filter dict-like columns
-    dict_like_columns = test_results.filter(regex="_std")
-    # filter all columns expcet standard scores
-    test_results_except_std_dictlike_scores = (
-        test_results.loc[:, ~(test_results.columns.isin(dict_like_columns.columns))]
-    )
-    # init final dataset
-    final_df = test_results_except_std_dictlike_scores
-    # expand dict-like columns (coming from norms)
-    for col_dict_name, col_dict in dict_like_columns.items():
-        final = pd.concat([
-            final_df,
-            pd.json_normalize(col_dict).add_prefix(f"{col_dict_name}_") # type: ignore
-        ], axis=1)
-    # persist results
+    # store final df
     final_df.to_csv(test_results_filepath, index=False)
 # on error
 except Exception as e:

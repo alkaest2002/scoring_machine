@@ -88,13 +88,13 @@ class Scorer():
         # if we want results splitted by straight/reversed items
         return sum_of_missing_straight_items_by_scale, sum_of_missing_reversed_items_by_scale
 
-    def compute_raw_scores_compensate_for_missing_items(self):
+    def compute_raw_scores_compensate_for_missing_items(self) -> tuple[pd.DataFrame, pd.DataFrame]:
         # get splitted data that is needed for computing raw scores while compensating for missing items
-        sum_straight, sum_reversed, _, _ = self.compute_raw_scores_components()
+        sum_straight, sum_reversed, mean_straight, mean_reversed = self.compute_raw_scores_components()
         missing_straight, missing_reversed = self.count_missing_items_by_scale()
         items_straight, items_reversed = self.count_items_by_scale()
         # init list
-        components = []
+        raw_components = []
         # compute corrected raw scores
         for sum_scores, missing_items_by_scale, items_by_scale in [
             (sum_straight, missing_straight, items_straight),
@@ -111,29 +111,36 @@ class Scorer():
             # compute corrected results
             corrected_results = mean_results * items_by_scale.T.to_numpy()
             # append corrected results to list
-            components.append(corrected_results)
+            raw_components.append(corrected_results)
+        # assemble raw scores dataframe
+        raw_scores = pd.DataFrame(sum(raw_components), index=self.item_answers.index, columns=self.scale_names).astype(int)
         # return results
-        return pd.DataFrame(sum(components), index=self.item_answers.index, columns=self.scale_names).astype(int)
+        return (
+            raw_scores.astype(int),
+            (sum_straight+sum_reversed).div(items_straight.sub(missing_straight)+items_reversed.sub(missing_reversed)).round(2)
+        )
 
     def compute_standard_scores(self, raw_scores, norms: pd.DataFrame, norms_col: str) -> pd.DataFrame:
         # if norms is an empty dataframe
         if norms.empty:
             # return empty dataframe with the same structure of raw_scores
             return pd.DataFrame().reindex_like(raw_scores) # type: ignore
-        # function to take standard score
+        # function to take standard scores
         def get_standard_scores(series, **kwargs):
             # get kwargs
             norms, norms_col = kwargs["norms"], kwargs["norms_col"]
             # determine wich norms to use for current scale
             norms_to_use = norms[norms["scale"].eq(series.name)]
-            # take form fourth column onwards
-            return norms_to_use.take(series.values, axis=0).iloc[:, 3:].to_dict(orient="records")
+            # get standard scores
+            stds = pd.merge_asof(series.to_frame().sort_values(by=series.name), norms_to_use, left_on=series.name, right_on="raw")
+            # return form fifth column onwards
+            return stds.iloc[:, 4:].to_dict(orient="records")
         # return standard scores
         return raw_scores.apply(get_standard_scores, norms=norms, norms_col=norms_col)
 
     def score(self, type_of_norms: str = "std"):
         # compute raw scores for each scale
-        raw_scores = self.compute_raw_scores_compensate_for_missing_items()
+        raw_scores, mean_scores = self.compute_raw_scores_compensate_for_missing_items()
         # compute missing items for each scale
         missing_by_scale = sum(self.count_missing_items_by_scale())
         # compute std scores for each scale
@@ -142,7 +149,8 @@ class Scorer():
         return pd.concat([
             self.norms_answers,
             self.item_answers,
-            raw_scores.add_suffix("_raw"),
-            standardized_scores.add_suffix(f"_{type_of_norms}"),
             missing_by_scale.add_suffix("_miss"), #type: ignore
+            raw_scores.add_suffix("_raw"),
+            mean_scores.add_suffix("_mean"),
+            standardized_scores.add_suffix(f"_{type_of_norms}"),
         ], axis=1)
