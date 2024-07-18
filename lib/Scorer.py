@@ -46,34 +46,27 @@ class Scorer():
         # return stright/reversed items matrices
         return items_by_scale, reversed_items_by_scale
 
-    def compute_raw_score(self, items_by_scale: pd.DataFrame, fillna_value: int) -> tuple[pd.DataFrame, pd.DataFrame]:
+    def compute_raw_score(self, items_by_scale: pd.DataFrame, fillna_value: int) -> pd.DataFrame:
         # clone item answers
         item_answers = self.item_answers.copy()
         # compute raw scores
         raw_scores = np.dot(item_answers.fillna(fillna_value).sub(fillna_value).abs(), items_by_scale)
-        # intercept numpy errors
-        with np.errstate(divide='ignore', invalid='ignore'):
-            # compute mean raw scores
-            mean_scores = np.true_divide(raw_scores, items_by_scale.sum(axis=0).to_numpy())
-            # replace NaNs, Infs with 0
-            mean_scores = np.nan_to_num(mean_scores, nan=0.0, posinf=0.0, neginf=0.0)
         # return matrices as pandas dataframes
         return (
-            pd.DataFrame(raw_scores, index=self.item_answers.index, columns=self.scale_names), # type: ignore
-            pd.DataFrame(mean_scores, index=self.item_answers.index, columns=self.scale_names) # type: ignore
+            pd.DataFrame(raw_scores, index=self.item_answers.index, columns=self.scale_names) # type: ignore
         )
 
-    def compute_raw_scores_components(self) -> tuple[pd.DataFrame, pd.DataFrame, pd.DataFrame, pd.DataFrame]:
+    def compute_raw_scores_components(self) -> tuple[pd.DataFrame, pd.DataFrame]:
         # set fillna value for straight items
         fillna_value = 0
         # compute scores
-        sum_straight, mean_straight = self.compute_raw_score(self.straight_items_by_scale, fillna_value)
+        sum_straight = self.compute_raw_score(self.straight_items_by_scale, fillna_value)
         # set fillna value for reverse items
         fillna_value = sum(self.test_specs.get_spec("likert").values()) # type: ignore
         # compute reversed items
-        sum_reversed, mean_reversed = self.compute_raw_score(self.reversed_items_by_scale, fillna_value)
+        sum_reversed = self.compute_raw_score(self.reversed_items_by_scale, fillna_value)
         # return results
-        return sum_straight, sum_reversed, mean_straight, mean_reversed
+        return sum_straight, sum_reversed
 
     def count_items_by_scale(self) -> tuple[pd.DataFrame,pd.DataFrame]:
         return self.straight_items_by_scale.sum(), self.reversed_items_by_scale.sum()
@@ -88,15 +81,15 @@ class Scorer():
         # if we want results splitted by straight/reversed items
         return sum_of_missing_straight_items_by_scale, sum_of_missing_reversed_items_by_scale
 
-    def compute_raw_scores_compensate_for_missing_items(self) -> tuple[pd.DataFrame, pd.DataFrame]:
+    def compute_scores(self) -> tuple[pd.DataFrame, pd.DataFrame, pd.DataFrame]:
         # intercept numpy errors
         with np.errstate(divide='ignore', invalid='ignore'):
             # get splitted data that is needed for computing raw scores while compensating for missing items
-            sum_straight, sum_reversed, mean_straight, mean_reversed = self.compute_raw_scores_components()
+            sum_straight, sum_reversed = self.compute_raw_scores_components()
             missing_straight, missing_reversed = self.count_missing_items_by_scale()
             items_straight, items_reversed = self.count_items_by_scale()
             # init list of components for computeing compensated raw scores
-            raw_components = []
+            corrected_raw_components = []
             # compute corrected raw scores
             for sum_scores, missing_items_by_scale, items_by_scale in [
                 (sum_straight, missing_straight, items_straight),
@@ -111,9 +104,9 @@ class Scorer():
                 # compute corrected results
                 corrected_results = mean_results * items_by_scale.T.to_numpy()
                 # append corrected results to list
-                raw_components.append(corrected_results)
+                corrected_raw_components.append(corrected_results)
             # assemble raw scores dataframe
-            raw_scores = pd.DataFrame(sum(raw_components), index=self.item_answers.index, columns=self.scale_names).astype(int)
+            corrected_raw_scores = pd.DataFrame(sum(corrected_raw_components), index=self.item_answers.index, columns=self.scale_names).astype(int)
             # compute mean scores
             mean_scores = (sum_straight+sum_reversed).div(items_straight.sub(missing_straight)+items_reversed.sub(missing_reversed))
             # replace NaNs, Infs with 0
@@ -121,7 +114,7 @@ class Scorer():
             # convert mean_scores to dataframe
             mean_scores = pd.DataFrame(mean_scores, index=self.item_answers.index, columns=self.scale_names)
             # return results
-            return raw_scores.astype(int), mean_scores.round(2)
+            return sum_straight+sum_reversed, corrected_raw_scores.astype(int), mean_scores.round(2)
 
     def compute_standard_scores(self, raw_scores, norms: pd.DataFrame, norms_col: str) -> pd.DataFrame:
         # if norms is an empty dataframe
@@ -146,18 +139,19 @@ class Scorer():
         return raw_scores.apply(get_standard_scores, norms=norms, norms_col=norms_col)
 
     def score(self, type_of_norms: str = "std"):
-        # compute raw scores for each scale
-        raw_scores, mean_scores = self.compute_raw_scores_compensate_for_missing_items()
         # compute missing items for each scale
         missing_by_scale = sum(self.count_missing_items_by_scale())
+        # compute raw scores for each scale
+        raw_scores, corrected_raw_scores, mean_scores = self.compute_scores()
         # compute std scores for each scale
-        standardized_scores = self.compute_standard_scores(raw_scores, self.test_norms, type_of_norms)
+        standardized_scores = self.compute_standard_scores(corrected_raw_scores, self.test_norms, type_of_norms)
         # return results
         return pd.concat([
             self.norms_answers,
             self.item_answers,
-            missing_by_scale.add_suffix("_miss"), #type: ignore
-            raw_scores.add_suffix("_raw"),
-            mean_scores.add_suffix("_mean"),
-            standardized_scores.add_suffix(f"_{type_of_norms}"),
+            missing_by_scale.add_prefix("missing_"), #type: ignore
+            raw_scores.add_prefix("raw_"),
+            corrected_raw_scores.add_prefix("corrected_raw_"),
+            mean_scores.add_prefix("mean_"),
+            standardized_scores.add_prefix(f"{type_of_norms}_"),
         ], axis=1)
