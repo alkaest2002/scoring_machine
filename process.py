@@ -34,15 +34,17 @@ try:
     # init test results
     test_results = pd.DataFrame()
     # loop through test data grouped by norms id
-    for norms_id, group_test_data in sanitized_test_data.groupby("norms_id"):
+    for norms_id, group_test_data in sanitized_test_data.groupby("norms_id", sort=False):
         # get norms
         test_norms = test_all_norms[test_all_norms["norms_id"] == norms_id] if norms_id != UNAVAILABLE_NORMS else pd.DataFrame()
         # init scorer
         scorer = Scorer(test_specs, test_norms, group_test_data) # type: ignore
         # add score
         test_results = pd.concat([ test_results, scorer.score() ])
+    # reset index
+    test_results = test_results.reset_index()
     # expand dict-like columns
-    final_df = expand_dict_like_columns(test_results, "_std")
+    final_df = expand_dict_like_columns(test_results, "std_").set_index("index").sort_index()
     # determine path of results data file
     test_results_filepath= filer.get_base_folderpath("xerox") / f"{Path(test_data_filename).stem}_scored.csv" # type: ignore
     # store final df
