@@ -14,6 +14,7 @@ available_tests = [ f.name for f in TESTS_PATH.glob("[!.]*") if f.is_dir ]
 # argparse
 parser = argparse.ArgumentParser(prog="Scoring Machine")
 parser.add_argument("-t", "--test", required=True, choices=available_tests)
+parser.add_argument("-e", "--expand_norms", choices=["0", "1"], default="0")
 args = parser.parse_args()
 
 try:
@@ -41,14 +42,16 @@ try:
         scorer = Scorer(test_specs, test_norms, group_test_data) # type: ignore
         # add score
         test_results = pd.concat([ test_results, scorer.score() ])
-    # reset index
-    test_results = test_results.reset_index()
-    # expand dict-like columns
-    final_df = expand_dict_like_columns(test_results, "std_").set_index("index").sort_index()
+    # if dict-like norms should be expanded
+    if args.expand_norms == "1":
+        # reset index
+        test_results = test_results.reset_index()
+        # expand dict-like columns and apply index again
+        test_results = expand_dict_like_columns(test_results, "std_").set_index("index").sort_index()
     # determine path of results data file
     test_results_filepath= filer.get_base_folderpath("xerox") / f"{Path(test_data_filename).stem}_scored.csv" # type: ignore
-    # store final df
-    final_df.to_csv(test_results_filepath, index=False)
+    # store results data
+    test_results.to_csv(test_results_filepath, index=False)
 # on error
 except Exception as e:
     # notify error message
