@@ -11,16 +11,31 @@ class Scorer():
         self.straight_items_by_scale, self.reversed_items_by_scale = self.convert_to_matrices()
 
     @cached_property
-    def scale_names(self) -> list[str]:
+    def scales(self) -> list[str]:
         return [ scale[0] for scale in self.test_specs.get_spec("scales") ] # type: ignore
 
     @cached_property
-    def norms_answers(self) -> pd.DataFrame:
+    def norms(self) -> pd.DataFrame:
         return self.test_data.loc[:, ["norms_id"]]
 
     @cached_property
-    def item_answers(self) -> pd.DataFrame:
+    def answers(self) -> pd.DataFrame:
         return self.test_data.drop(columns=["norms_id"])
+
+    @cached_property
+    def count_items_by_scale(self) -> tuple[pd.DataFrame,pd.DataFrame]:
+        return self.straight_items_by_scale.sum(), self.reversed_items_by_scale.sum()
+
+    @cached_property
+    def missing_items_by_scale(self) -> tuple[pd.DataFrame | pd.Series, pd.DataFrame | pd.Series]:
+        # lambda fn
+        lambda_fn = lambda x: self.answers.T.loc[x.astype(bool).values].isna().sum()
+        # missing straight items per scale
+        sum_of_missing_straight_items_by_scale = self.straight_items_by_scale.apply(lambda_fn)
+        # missing reversed items per scale
+        sum_of_missing_reversed_items_by_scale = self.reversed_items_by_scale.apply(lambda_fn)
+        # if we want results splitted by straight/reversed items
+        return sum_of_missing_straight_items_by_scale, sum_of_missing_reversed_items_by_scale
 
     def convert_to_matrices(self) -> tuple[pd.DataFrame, pd.DataFrame]:
         # init matrices to be returned
@@ -46,75 +61,64 @@ class Scorer():
         # return stright/reversed items matrices
         return items_by_scale, reversed_items_by_scale
 
-    def compute_raw_score(self, items_by_scale: pd.DataFrame, fillna_value: int) -> pd.DataFrame:
+    def compute_raw_score_component(self, items_by_scale: pd.DataFrame, fillna_value: int) -> pd.DataFrame:
         # clone item answers
-        item_answers = self.item_answers.copy()
+        answers = self.answers.copy()
         # compute raw scores
-        raw_scores = np.dot(item_answers.fillna(fillna_value).sub(fillna_value).abs(), items_by_scale)
+        raw_scores = np.dot(answers.fillna(fillna_value).sub(fillna_value).abs(), items_by_scale)
         # return matrices as pandas dataframes
-        return (
-            pd.DataFrame(raw_scores, index=self.item_answers.index, columns=self.scale_names) # type: ignore
-        )
+        return pd.DataFrame(raw_scores, index=self.answers.index, columns=self.scales) # type: ignore
 
-    def compute_raw_scores_components(self) -> tuple[pd.DataFrame, pd.DataFrame]:
+    def compute_raw_scores(self) -> tuple[pd.DataFrame, pd.DataFrame]:
         # set fillna value for straight items
         fillna_value = 0
         # compute scores
-        sum_straight = self.compute_raw_score(self.straight_items_by_scale, fillna_value)
+        raw_scores_straight = self.compute_raw_score_component(self.straight_items_by_scale, fillna_value)
         # set fillna value for reverse items
         fillna_value = sum(self.test_specs.get_spec("likert").values()) # type: ignore
         # compute reversed items
-        sum_reversed = self.compute_raw_score(self.reversed_items_by_scale, fillna_value)
+        raw_scores_reversed = self.compute_raw_score_component(self.reversed_items_by_scale, fillna_value)
         # return results
-        return sum_straight, sum_reversed
-
-    def count_items_by_scale(self) -> tuple[pd.DataFrame,pd.DataFrame]:
-        return self.straight_items_by_scale.sum(), self.reversed_items_by_scale.sum()
-
-    def count_missing_items_by_scale(self) -> tuple[pd.DataFrame | pd.Series, pd.DataFrame | pd.Series]:
-        # lambda fn
-        lambda_fn = lambda x: self.item_answers.T.loc[x.astype(bool).values].isna().sum()
-        # missing straight items per scale
-        sum_of_missing_straight_items_by_scale = self.straight_items_by_scale.apply(lambda_fn)
-        # missing reversed items per scale
-        sum_of_missing_reversed_items_by_scale = self.reversed_items_by_scale.apply(lambda_fn)
-        # if we want results splitted by straight/reversed items
-        return sum_of_missing_straight_items_by_scale, sum_of_missing_reversed_items_by_scale
+        return raw_scores_straight, raw_scores_reversed
 
     def compute_scores(self) -> tuple[pd.DataFrame, pd.DataFrame, pd.DataFrame]:
         # intercept numpy errors
         with np.errstate(divide='ignore', invalid='ignore'):
-            # get splitted data that is needed for computing raw scores while compensating for missing items
-            sum_straight, sum_reversed = self.compute_raw_scores_components()
-            missing_straight, missing_reversed = self.count_missing_items_by_scale()
-            items_straight, items_reversed = self.count_items_by_scale()
+            # get items by scale and type of item
+            count_items_straight, count_items_reversed = self.count_items_by_scale
+            # get missing items by scale and type of item
+            missing_items_straight, missing_items_reversed = self.missing_items_by_scale
+            # get raw scores by scale
+            raw_scores_straight, raw_scores_reversed = self.compute_raw_scores()
             # init list of components for computeing compensated raw scores
             corrected_raw_components = []
             # compute corrected raw scores
-            for sum_scores, missing_items_by_scale, items_by_scale in [
-                (sum_straight, missing_straight, items_straight),
-                (sum_reversed, missing_reversed, items_reversed)
+            for sum_scores, missing_items_by_scale, count_items_by_scale in [
+                (raw_scores_straight, missing_items_straight, count_items_straight),
+                (raw_scores_reversed, missing_items_reversed, count_items_reversed)
             ]:
                 # compute how many items where effectively responded (by scale)
-                items_with_answers_by_scale = items_by_scale - missing_items_by_scale
+                items_with_answers_by_scale = missing_items_by_scale.rsub(count_items_by_scale)
                 # compute mean responses
                 mean_results = np.true_divide(sum_scores, items_with_answers_by_scale)
                 # replace NaNs, Infs with 0
                 mean_results = np.nan_to_num(mean_results, nan=0, posinf=0, neginf=0)
                 # compute corrected results
-                corrected_results = mean_results * items_by_scale.T.to_numpy()
+                corrected_results = mean_results * count_items_by_scale.T.to_numpy()
                 # append corrected results to list
                 corrected_raw_components.append(corrected_results)
             # assemble raw scores dataframe
-            corrected_raw_scores = pd.DataFrame(sum(corrected_raw_components), index=self.item_answers.index, columns=self.scale_names).astype(int)
+            corrected_raw_scores = pd.DataFrame(sum(corrected_raw_components), index=self.answers.index, columns=self.scales).astype(int)
             # compute mean scores
-            mean_scores = (sum_straight+sum_reversed).div(items_straight.sub(missing_straight)+items_reversed.sub(missing_reversed))
+            mean_scores = (
+                raw_scores_straight + raw_scores_reversed).div(count_items_straight.sub(missing_items_straight) + count_items_reversed.sub(missing_items_reversed)
+            )
             # replace NaNs, Infs with 0
             mean_scores = np.nan_to_num(mean_scores, nan=np.nan, posinf=np.nan, neginf=np.nan)
             # convert mean_scores to dataframe
-            mean_scores = pd.DataFrame(mean_scores, index=self.item_answers.index, columns=self.scale_names)
+            mean_scores = pd.DataFrame(mean_scores, index=self.answers.index, columns=self.scales)
             # return results
-            return sum_straight+sum_reversed, corrected_raw_scores.astype(int), mean_scores.round(2)
+            return raw_scores_straight+raw_scores_reversed, corrected_raw_scores.astype(int), mean_scores.round(2)
 
     def compute_standard_scores(self, raw_scores, norms: pd.DataFrame, norms_col: str) -> pd.DataFrame:
         # if norms is an empty dataframe
@@ -140,15 +144,15 @@ class Scorer():
 
     def score(self, type_of_norms: str = "std"):
         # compute missing items for each scale
-        missing_by_scale = sum(self.count_missing_items_by_scale())
+        missing_by_scale = sum(self.missing_items_by_scale)
         # compute raw scores for each scale
         raw_scores, corrected_raw_scores, mean_scores = self.compute_scores()
         # compute std scores for each scale
         standardized_scores = self.compute_standard_scores(corrected_raw_scores, self.test_norms, type_of_norms)
         # return results
         return pd.concat([
-            self.norms_answers,
-            self.item_answers,
+            self.norms,
+            self.answers,
             missing_by_scale.add_prefix("missing_"), #type: ignore
             raw_scores.add_prefix("raw_"),
             corrected_raw_scores.add_prefix("corrected_raw_"),
