@@ -134,7 +134,7 @@ class Scorer():
             # get standard scores
             stds = pd.merge_asof(
                 series.to_frame().sort_values(by=series.name), norms_to_use, left_on=series.name, right_on="raw", direction="nearest"
-            )
+            ).add_suffix(f"_{norms.iloc[0,0]}")
             # reindex with double argsort to re-establish original index of series
             stds = stds.reindex(index=series.argsort().argsort())
             # return form fifth column onwards
