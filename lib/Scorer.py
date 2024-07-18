@@ -90,7 +90,7 @@ class Scorer():
             missing_items_straight, missing_items_reversed = self.missing_items_by_scale
             # get raw scores by scale
             raw_scores_straight, raw_scores_reversed = self.compute_raw_scores()
-            # init list of components for computeing compensated raw scores
+            # init list of components for computing corrected raw scores (i.e., take into account missing items)
             corrected_raw_components = []
             # compute corrected raw scores
             for sum_scores, missing_items_by_scale, count_items_by_scale in [
@@ -104,11 +104,11 @@ class Scorer():
                 # replace NaNs, Infs with 0
                 mean_results = np.nan_to_num(mean_results, nan=0, posinf=0, neginf=0)
                 # compute corrected results
-                corrected_results = mean_results * count_items_by_scale.T.to_numpy()
+                corrected_results = mean_results * count_items_by_scale.to_numpy()
                 # append corrected results to list
                 corrected_raw_components.append(corrected_results)
             # assemble raw scores dataframe
-            corrected_raw_scores = pd.DataFrame(sum(corrected_raw_components), index=self.answers.index, columns=self.scales).astype(int)
+            corrected_raw_scores = pd.DataFrame(sum(corrected_raw_components), index=self.answers.index, columns=self.scales)
             # compute mean scores
             mean_scores = (
                 raw_scores_straight + raw_scores_reversed).div(count_items_straight.sub(missing_items_straight) + count_items_reversed.sub(missing_items_reversed)
