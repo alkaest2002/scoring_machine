@@ -133,16 +133,16 @@ class Scorer():
             norms_to_use = norms[norms["scale"].eq(series.name)]
             # get standard scores
             stds = pd.merge_asof(
-                series.to_frame().sort_values(by=series.name),
+                series.to_frame().reset_index().sort_values(by=series.name),
                 norms_to_use.sort_values(by="raw"),
                 left_on=series.name,
                 right_on="raw",
                 direction="nearest"
-            ).add_suffix(f"_{norms.iloc[0,0]}")
+            )
             # reindex with double argsort to re-establish original index of series
-            stds = stds.reindex(index=series.argsort().argsort())
+            stds = stds.set_index("index").sort_index()
             # return form fifth column onwards
-            return stds.iloc[:, 4:].to_dict(orient="records")
+            return stds.iloc[:, 4:].add_suffix(f"_{norms.iloc[0,0]}").to_dict(orient="records")
         # return standard scores
         return raw_scores.apply(get_standard_scores, norms=norms, norms_col=norms_col)
 
