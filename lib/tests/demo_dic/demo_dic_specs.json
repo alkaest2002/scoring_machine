@@ -1,0 +1,14 @@
+{
+  "name": "Demo dic",
+  "length": 4,
+  "likert": {
+    "min": 0,
+    "max": 1
+  },
+  "scales": [
+    ["s1", [1, 2, 3, 4], []],
+    ["s2", [], [1, 2, 3, 4]],
+    ["s3", [1, 2], [3, 4]]
+  ],
+  "norms": ["ita_all_norm", "ita_all_clin"]
+}
