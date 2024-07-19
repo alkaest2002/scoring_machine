@@ -28,10 +28,14 @@ class Sanitizer():
         return self.test_data.drop(columns=["norms_id"], errors="ignore")
 
     def sanitize_norms(self) -> pd.DataFrame:
-        # get available norms
-        available_norms = self.test_specs.get_spec("norms")
+        # get available norms as a set
+        available_norms = set(self.test_specs.get_spec("norms"))
+        # set condition to check
+        condition = self.norms.map(lambda x: set(x.split(" ")).issubset(available_norms)).values
         # cleanup norms
-        return self.norms.where(self.norms.isin(available_norms), UNAVAILABLE_NORMS) # type: ignore
+        self.norms.where(condition, UNAVAILABLE_NORMS)
+        # return norms
+        return self.norms
 
     def sanitize_item_answers(self) -> pd.DataFrame:
         return (

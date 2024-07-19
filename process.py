@@ -35,19 +35,23 @@ try:
     # init test results
     test_results = pd.DataFrame()
     # loop through test data grouped by norms id
-    for norms_id, group_test_data in sanitized_test_data.groupby("norms_id", sort=False):
+    for norms_ids, group_test_data in sanitized_test_data.groupby("norms_id", sort=False):
+        # split norm_ids
+        norms_list = norms_ids.split(" ") # type: ignore
         # get norms
-        test_norms = test_all_norms[test_all_norms["norms_id"] == norms_id] if norms_id != UNAVAILABLE_NORMS else pd.DataFrame()
+        test_norms = test_all_norms[test_all_norms["norms_id"].isin(norms_list)] if norms_list[0] != UNAVAILABLE_NORMS else pd.DataFrame()
         # init scorer
         scorer = Scorer(test_specs, test_norms, group_test_data) # type: ignore
         # add score
         test_results = pd.concat([ test_results, scorer.score() ])
-    # if dict-like norms should be expanded
+    # reset index
+    test_results = test_results.reset_index()
+    # if dict-like columns should be expanded
     if args.expand_norms == "1":
-        # reset index
-        test_results = test_results.reset_index()
-        # expand dict-like columns and apply index again
-        test_results = expand_dict_like_columns(test_results, "std_").set_index("index").sort_index()
+        # expand dict-like columns
+        test_results = expand_dict_like_columns(test_results, "std_")
+    # rebuild original index
+    test_results = test_results.set_index("index").sort_index()
     # determine path of results data file
     test_results_filepath= filer.get_base_folderpath("xerox") / f"{Path(test_data_filename).stem}_scored.csv" # type: ignore
     # store results data
