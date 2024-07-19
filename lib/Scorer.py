@@ -2,10 +2,11 @@ import re
 import numpy as np
 import pandas as pd
 from functools import cached_property
+from lib.Loader import TestSpecs
 
 class Scorer():
 
-    def __init__(self, test_specs: dict, test_norms: pd.DataFrame, test_data: pd.DataFrame) -> None:
+    def __init__(self, test_specs: TestSpecs, test_norms: pd.DataFrame, test_data: pd.DataFrame) -> None:
         self.test_specs = test_specs
         self.test_norms = test_norms
         self.test_data = test_data
@@ -13,7 +14,7 @@ class Scorer():
 
     @cached_property
     def scales(self) -> list[str]:
-        return [ scale[0] for scale in self.test_specs.get_spec("scales") ] # type: ignore
+        return [ scale[0] for scale in self.test_specs.get_spec("scales") ]
 
     @cached_property
     def norms(self) -> pd.DataFrame:
@@ -43,7 +44,7 @@ class Scorer():
         items_by_scale = pd.DataFrame()
         reversed_items_by_scale = pd.DataFrame()
         # iterate over scales
-        for scale in self.test_specs.get_spec("scales"): # type: ignore
+        for scale in self.test_specs.get_spec("scales"):
             # get current scale label, straight and reversed items
             scale_label, straight_items_indices, reversed_items_indices = scale
             # iterate over type of items (either straight or reversed)
@@ -52,12 +53,12 @@ class Scorer():
                 (reversed_items_by_scale, reversed_items_indices)
             ]:
                 # init items series with zeroes
-                items = pd.Series(np.zeros(self.test_specs.get_spec("length"))) # type: ignore
+                items = pd.Series(np.zeros(self.test_specs.get_spec("length")))
                 # correct item indices, since items are 1-based while matrices are 0-based
                 matrix_indices = pd.Series(items_indices).sub(1)
                 # "switch to 1" items belonging to current scale
                 items[matrix_indices] = 1
-                # add current scale items matrix to approriate df
+                # add current scale items matrix to approriate dataframe
                 df[scale_label] = items
         # return stright/reversed items matrices
         return items_by_scale, reversed_items_by_scale
@@ -76,7 +77,7 @@ class Scorer():
         # compute scores
         raw_scores_straight = self.compute_raw_score_component(self.straight_items_by_scale, fillna_value)
         # set fillna value for reverse items
-        fillna_value = sum(self.test_specs.get_spec("likert").values()) # type: ignore
+        fillna_value = sum(self.test_specs.get_spec("likert").values())
         # compute reversed items
         raw_scores_reversed = self.compute_raw_score_component(self.reversed_items_by_scale, fillna_value)
         # return results
@@ -125,17 +126,18 @@ class Scorer():
         # if norms is an empty dataframe
         if norms.empty:
             # return empty dataframe with the same structure of raw_scores
-            return pd.DataFrame().reindex_like(raw_scores) # type: ignore
+            return pd.DataFrame().reindex_like(raw_scores)
         # function to take standard scores
         def get_standard_scores(series, **kwargs):
             # get kwargs
             norms, norms_col = kwargs["norms"], kwargs["norms_col"]
-            # prepare norms table (in case user requests std scores from multiple norms)
-            norms = norms.pivot_table(values=['std'], index=['scale','raw'], columns=['norms_id']).reset_index()
-            # flatten multi_index columns
+            # prepare norms table
+            # need to pivto in case user requested multiple norms
+            norms = norms.pivot_table(index=['scale','raw'], columns=['norms_id'], values=['std']).reset_index()
+            # flatten multilevel columns index
             norms = pd.DataFrame(norms.to_records())
-            # sanitize columns labels
-            norms.columns = [ "_".join(re.findall(r'\b\w+\b', c))  for c in norms.columns.values  ]
+            # clean up columns labels
+            norms.columns = [ "_".join(re.findall(r'\b\w+\b', c))  for c in norms.columns ]
             # drop unwnated column
             norms = norms.drop(columns="index")
             # determine wich norms to use for current scale
@@ -166,7 +168,7 @@ class Scorer():
         return pd.concat([
             self.norms,
             self.answers,
-            missing_by_scale.add_prefix("missing_"), #type: ignore
+            missing_by_scale.add_prefix("missing_"), # type: ignore
             raw_scores.add_prefix("raw_"),
             corrected_raw_scores.add_prefix("corrected_raw_"),
             mean_scores.add_prefix("mean_"),

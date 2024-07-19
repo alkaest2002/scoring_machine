@@ -2,15 +2,16 @@ import json
 import pandas as pd
 from functools import reduce
 
+from typing import Any
 from lib.Filer import Filer
 from lib.Errors import NotFoundError
 
 class TestSpecs():
 
-    def __init__(self, data: dict):
+    def __init__(self, data: dict) -> None:
         self.data = data
 
-    def get_spec(self, path: str):
+    def get_spec(self, path: str) -> Any:
         # split json path
         path_bits = path.split(".")
         # return requested value traversing path bits
