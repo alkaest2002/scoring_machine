@@ -152,8 +152,9 @@ cython_debug/
 
 .DS_Store
 **/.env
-data
 xerox
 old
 lib/tests/poms
 lib/tests/spectra
+data/data_poms.csv
+data/data_spectra.csv

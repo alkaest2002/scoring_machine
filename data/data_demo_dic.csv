@@ -1,0 +1,6 @@
+norms_id,i1,i2,i3,i4
+ita_all_clin,0,0,0,0
+ita_all_norm ita_all_clin,1,1,1,1
+ita_all_norm,1,0,1,0
+ita_all_norm,1,1,0,0
+ita_all_clin,1,1,1,0
