@@ -2,6 +2,8 @@ import re
 import numpy as np
 import pandas as pd
 from functools import cached_property
+
+from pandas.core.generic import Axes
 from lib.Loader import TestSpecs
 
 class Scorer():
@@ -13,8 +15,8 @@ class Scorer():
         self.straight_items_by_scale, self.reversed_items_by_scale = self.convert_to_matrices()
 
     @cached_property
-    def scales(self) -> list[str]:
-        return [ scale[0] for scale in self.test_specs.get_spec("scales") ]
+    def scales(self) -> Axes:
+        return pd.Index([ scale[0] for scale in self.test_specs.get_spec("scales") ])
 
     @cached_property
     def norms(self) -> pd.DataFrame:
@@ -69,7 +71,7 @@ class Scorer():
         # compute raw scores
         raw_scores = np.dot(answers.fillna(fillna_value).sub(fillna_value).abs(), items_by_scale)
         # return matrices as pandas dataframes
-        return pd.DataFrame(raw_scores, index=self.answers.index, columns=self.scales) # type: ignore
+        return pd.DataFrame(raw_scores, index=self.answers.index, columns=self.scales)
 
     def compute_raw_scores(self) -> tuple[pd.DataFrame, pd.DataFrame]:
         # set fillna value for straight items
@@ -133,7 +135,10 @@ class Scorer():
             norms, norms_col = kwargs["norms"], kwargs["norms_col"]
             # prepare norms table
             # need to pivto in case user requested multiple norms
-            norms = norms.pivot_table(index=['scale','raw'], columns=['norms_id'], values=['std']).reset_index()
+            norms = ( norms
+                    .pivot_table(index=['scale','raw'], columns=['norms_id'], values=['std','interpretation'], aggfunc=lambda x: x)
+                    .reset_index()
+            )
             # flatten multilevel columns index
             norms = pd.DataFrame(norms.to_records())
             # clean up columns labels
@@ -153,7 +158,7 @@ class Scorer():
             # reset index to re-establish original order of series
             stds = stds.set_index("index").sort_index()
             # return form fifth column onwards
-            return stds.iloc[:,3:].add_suffix(f"_{norms.iloc[0,0]}").to_dict(orient="records")
+            return stds.iloc[:,3:].add_prefix(f"{norms.iloc[0,0]}_").to_dict(orient="records")
         # return standard scores
         return raw_scores.apply(get_standard_scores, norms=norms, norms_col=norms_col)
 
