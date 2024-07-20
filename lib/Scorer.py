@@ -137,7 +137,7 @@ class Scorer():
             # flatten multilevel columns index
             norms = pd.DataFrame(norms.to_records())
             # clean up columns labels
-            norms.columns = [ "_".join(re.findall(r'\b\w+\b', c))  for c in norms.columns ]
+            norms.columns = [ "_".join(re.findall(r'\b\w+\b', c)) for c in norms.columns ]
             # drop unwnated column
             norms = norms.drop(columns="index")
             # determine wich norms to use for current scale
@@ -150,10 +150,10 @@ class Scorer():
                 right_on="raw",
                 direction="nearest"
             )
-            # reindex to re-establish original order of series
+            # reset index to re-establish original order of series
             stds = stds.set_index("index").sort_index()
             # return form fifth column onwards
-            return stds.iloc[:, 3:].add_suffix(f"_{norms.iloc[0,0]}").to_dict(orient="records")
+            return stds.iloc[:,3:].add_suffix(f"_{norms.iloc[0,0]}").to_dict(orient="records")
         # return standard scores
         return raw_scores.apply(get_standard_scores, norms=norms, norms_col=norms_col)
 

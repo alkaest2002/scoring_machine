@@ -50,7 +50,7 @@ class Loader(object):
 
     def load_test_data(self, data_filename: str) -> pd.DataFrame:
         # determine data filepath
-        data_filepath = self.filer.get_base_folderpath("data") / data_filename
+        data_filepath = self.filer.get_base_folderpath("data") / data_filename # type: ignore
         # init test data variable
         data = pd.DataFrame()
         # if test data filepath exists
