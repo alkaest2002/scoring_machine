@@ -39,7 +39,11 @@ try:
         # split norm_ids
         norms_list = norms_ids.split(" ") # type: ignore
         # get norms
-        test_norms = test_all_norms[test_all_norms["norms_id"].isin(norms_list)] if norms_list[0] != UNAVAILABLE_NORMS else pd.DataFrame()
+        test_norms = (
+            test_all_norms[test_all_norms["norms_id"].isin(norms_list)]
+                if norms_list[0] != UNAVAILABLE_NORMS
+                else pd.DataFrame()
+        )
         # init scorer
         scorer = Scorer(test_specs, test_norms, group_test_data) # type: ignore
         # add score
@@ -53,7 +57,7 @@ try:
     # rebuild original index
     test_results = test_results.set_index("index").sort_index()
     # determine path of results data file
-    test_results_filepath= filer.get_base_folderpath("xerox") / f"{Path(test_data_filename).stem}_scored.csv" # type: ignore
+    test_results_filepath= filer.get_base_folderpath("xerox") / f"{Path(test_data_filename).stem}_scored.csv"
     # store results data
     test_results.to_csv(test_results_filepath, index=False)
 # on error

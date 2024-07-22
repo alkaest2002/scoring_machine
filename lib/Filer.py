@@ -32,13 +32,9 @@ class Filer(object):
             # raise error
             raise NotFoundError(f"Missing paths: {[ str(f) for f in base_folderpaths.values() if not f.exists() ]}.")
 
-    def get_base_folderpath(self, folderpath: str = "all") -> Path | dict[str, Path]:
-        # if user requests all paths
-        if folderpath == "all":
-            # return them
-            return self.base_folderpaths
+    def get_base_folderpath(self, folderpath: str = "all") -> Path:
         # if user requests a valid specific path
-        elif folderpath in self.base_folderpaths.keys():
+        if folderpath in self.base_folderpaths.keys():
             # return it
             return self.base_folderpaths[folderpath]
         # otherwise
@@ -49,7 +45,7 @@ class Filer(object):
 
     def get_test_folderpath(self, test : str) -> Path:
         # determine test folderpath
-        test_folderpath =  TESTS_PATH / test # type: ignore
+        test_folderpath =  TESTS_PATH / test
         # if test folderpath exists
         if test_folderpath.exists():
             # return test folderpath

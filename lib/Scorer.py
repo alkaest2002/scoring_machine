@@ -122,7 +122,7 @@ class Scorer():
             # convert mean_scores to dataframe
             mean_scores = pd.DataFrame(mean_scores, index=self.answers.index, columns=self.scales)
             # return results
-            return raw_scores_straight+raw_scores_reversed, corrected_raw_scores.astype(int), mean_scores.round(2)
+            return raw_scores_straight + raw_scores_reversed, corrected_raw_scores.astype(int), mean_scores.round(2)
 
     def compute_standard_scores(self, raw_scores, norms: pd.DataFrame, norms_col: str) -> pd.DataFrame:
         # if norms is an empty dataframe
@@ -133,10 +133,12 @@ class Scorer():
         def get_standard_scores(series, **kwargs):
             # get kwargs
             norms, norms_col = kwargs["norms"], kwargs["norms_col"]
+            # determin values for pivot table
+            values_for_pivot_table = [c for c in ['std','std_interpretation'] if c in norms.columns]
             # prepare norms table
-            # need to pivto in case user requested multiple norms
+            # need to pivot in case user requested multiple norms
             norms = ( norms
-                    .pivot_table(index=['scale','raw'], columns=['norms_id'], values=['std','interpretation'], aggfunc=lambda x: x)
+                    .pivot_table(index=['scale','raw'], columns=['norms_id'], values=values_for_pivot_table, aggfunc=lambda x: x)
                     .reset_index()
             )
             # flatten multilevel columns index

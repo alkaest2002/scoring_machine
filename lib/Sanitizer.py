@@ -37,16 +37,16 @@ class Sanitizer():
         # return norms
         return self.norms
 
-    def sanitize_item_answers(self) -> pd.DataFrame:
+    def sanitize_item_answers(self) -> pd.DataFrame | pd.Series:
         return (
             self.item_answers
                 .apply(lambda x: pd.to_numeric(x, errors="coerce", downcast="integer"))
                 .clip(self.test_specs.get_spec("likert.min"), self.test_specs.get_spec("likert.max"))
-        ) # type: ignore
+        )
 
     def sanitize(self) -> pd.DataFrame:
         # if test data doesn't match test specificaions
-        if self.norms.shape[1] + self.item_answers.shape[1] != self.test_specs.get_spec("length") + 1: #type: ignore
+        if self.norms.shape[1] + self.item_answers.shape[1] != self.test_specs.get_spec("length") + 1:
             # raise error
             raise ValidationError("Test data is not compatible with test specifications.")
         # sanitize norms and item answers
