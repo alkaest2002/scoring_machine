@@ -33,7 +33,7 @@ class Sanitizer():
         # set condition to check
         condition = self.norms.map(lambda x: set(x.split(" ")).issubset(available_norms)).values
         # cleanup norms
-        self.norms.where(condition, UNAVAILABLE_NORMS)
+        self.norms = self.norms.where(condition, UNAVAILABLE_NORMS)
         # return norms
         return self.norms
 

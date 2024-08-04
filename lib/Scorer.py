@@ -133,7 +133,7 @@ class Scorer():
         def get_standard_scores(series, **kwargs):
             # get kwargs
             norms, norms_col = kwargs["norms"], kwargs["norms_col"]
-            # determin values for pivot table
+            # determine values for pivot table
             values_for_pivot_table = [c for c in ['std','std_interpretation'] if c in norms.columns]
             # prepare norms table
             # need to pivot in case user requested multiple norms
@@ -159,7 +159,7 @@ class Scorer():
             )
             # reset index to re-establish original order of series
             stds = stds.set_index("index").sort_index()
-            # return form fifth column onwards
+            # return from fourth column onwards
             return stds.iloc[:,3:].add_prefix(f"{norms.iloc[0,0]}_").to_dict(orient="records")
         # return standard scores
         return raw_scores.apply(get_standard_scores, norms=norms, norms_col=norms_col)
